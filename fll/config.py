@@ -39,9 +39,9 @@ Examples:
     archive components:
     $ fll --archs amd64 i386 --components main contrib non-free
 
-    Add aptosid package repository to chroot's apt sources:
-    $ fll --apt-source label=aptosid uri=http://aptosid.com/debian/ \\
-          components=main,fix.main keyring=aptosid-archive-keyring
+    Add siduction package repository to chroot's apt sources:
+    $ fll --apt-source label=siduction uri=http://packages.siduction.org/siduction/ \\
+          components=main keyring=siduction-archive-keyring
 """
     formatter = argparse.RawDescriptionHelpFormatter
     p = argparse.ArgumentParser(description=desc, prog='fll',

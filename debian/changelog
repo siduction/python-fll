@@ -1,3 +1,13 @@
+python-fll (0.9.8) unstable; urgency=low
+
+  * Forked
+  * introduction me as maintainer
+  * introducing Ferdinand Thommes <devil@siduction.org> and Torsten
+    Wohlfarth <towo@siduction.org> as uploaders
+  * change the manual section and repository description
+
+ -- Alf Gaida <agaida@siduction.org>  Wed, 04 Jan 2012 11:59:23 +0100
+
 python-fll (0.9.7) UNRELEASED; urgency=low
 
   * NOT RELEASED YET
