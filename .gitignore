@@ -1,0 +1,11 @@
+build/
+debian/files
+debian/python-fll.debhelper.log
+debian/python-fll.postinst.debhelper
+debian/python-fll.prerm.debhelper
+debian/python-fll.substvars
+debian/python-fll/
+fll.8
+fll/__init__.pyc
+fll/config.pyc
+fll/misc.pyc
