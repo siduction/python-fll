@@ -1,3 +1,11 @@
+python-fll (0.9.10) unstable; urgency=low
+
+  * add source override to prevent lintian complaining about
+    XSBXC-Original-Maintainer
+  * fixes #648 
+
+ -- Alf Gaida <agaida@siduction.org>  Thu, 22 Mar 2012 21:52:45 +0100
+
 python-fll (0.9.9) unstable; urgency=low
 
   * bump standards to 3.9.3
