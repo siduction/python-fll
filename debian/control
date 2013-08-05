@@ -9,9 +9,8 @@ Build-Depends: debhelper (>= 9),
 Maintainer: Alf Gaida <agaida@siduction.org>
 Uploaders: Ferdinand Thommes <devil@siduction.org>,
  Torsten Wohlfarth <towo@siduction.org>
-XSBC-Original-Maintainer: Kel Modderman <kel@otaku42.de>
 XS-Python-Version: >=2.7
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 
 Package: python-fll
 Architecture: all

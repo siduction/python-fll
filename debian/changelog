@@ -1,3 +1,13 @@
+python-fll (2013.08.05) unstable; urgency=low
+
+  * new numbering yyyy.mm.dd.minor
+  * added aspell-de
+  * remove XBSC-Original-Maintainer
+  * remove source source.lintian-override 
+  * copyright current standards
+
+ -- Alf Gaida <agaida@siduction.org>  Mon, 05 Aug 2013 23:39:32 +0200
+
 python-fll (0.9.10) unstable; urgency=low
 
   * add source override to prevent lintian complaining about
