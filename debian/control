@@ -1,24 +1,24 @@
 Source: python-fll
+Maintainer: Alf Gaida <agaida@siduction.org>
+Uploaders: Ferdinand Thommes <devil@siduction.org>,
+           Torsten Wohlfarth <towo@siduction.org>
 Section: python
 Priority: optional
 Build-Depends: debhelper (>= 9),
- python-all (>= 2.6.6-3~),
- python-apt,
- python-argparse,
- python-configobj
-Maintainer: Alf Gaida <agaida@siduction.org>
-Uploaders: Ferdinand Thommes <devil@siduction.org>,
- Torsten Wohlfarth <towo@siduction.org>
-XS-Python-Version: >=2.7
-Standards-Version: 3.9.4
+               python-all,
+               python-apt,
+               python-argparse,
+               python-configobj
+Standards-Version: 3.9.6
+X-Python-Version: >=2.7
 
 Package: python-fll
 Architecture: all
 Depends: ${misc:Depends},
- ${python:Depends},
- python-apt (>= 0.7.93),
- python-argparse,
- python-configobj
+         ${python:Depends},
+         python-apt,
+         python-argparse,
+         python-configobj
 Provides: ${python:Provides}
 Description: common infrastructure for the FULLSTORY live Debian media project
  python-fll is a group of modules used by a variety of fll scripts, which are
