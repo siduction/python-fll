@@ -2,7 +2,7 @@
 This is the fll.aptlib module, it provides a class for preparing and using
 apt in a chroot.
 
-Authour:   Kel Modderman
+Author:    Kel Modderman
 Copyright: Copyright (C) 2010 Kel Modderman <kel@otaku42.de>
 License:   GPL-2
 """
@@ -69,6 +69,8 @@ class AptLib(object):
         # Avoid apt-listchanges / dpkg-preconfigure
         apt_pkg.config.clear("DPkg::Pre-Install-Pkgs")
 
+        # Debug apt preferences configuration
+        #apt_pkg.config.set('Debug::pkgDPkgPM', 'true')
         fll.misc.debug(self.config['debug'], 'apt_pkg.config',
                        apt_pkg.config.dump())
 
@@ -85,14 +87,10 @@ class AptLib(object):
                 with open(filename, mode) as fh:
                     if mode == 'a':
                         print >>fh, '\n'
-                    for n in range(30):
-                        print >>fh, '# '
-                    print >>fh, '#\n'
+                    print >>fh, '%s#' % ('# '*30)
                     for line in lines:
-                        print >>fh, '# %-58s#\n' % line
-                    for n in range(30):
-                        print >>fh, '# '
-                    print >>fh, '#\n'
+                        print >>fh, '# %-58s#' % line
+                    print >>fh, '%s#' % ('# '*30)
             except IOError, e:
                 raise AptLibError('failed to modify sources.list: ' + e)
 
@@ -122,7 +120,7 @@ class AptLib(object):
             for suite in suites:
                 line = '%s %s %s' % (uri, suite, ' '.join(components))
                 try:
-                    with open(self.chroot.chroot_path(fname), 'a') as fh:
+                    with open(self.chroot.chroot_path(fname), 'w') as fh:
                         print >>fh, 'deb ' + line
                         if src:
                             print >>fh, 'deb-src ' + line
@@ -195,7 +193,7 @@ class AptLib(object):
              apt_pkg.size_to_str(self.cache.required_download),
              apt_pkg.size_to_str(self.cache.required_space))
 
-        self.chroot.mountvirtfs()
+        mounted = self.chroot.mountvirtfs()
         try:
             self.cache.commit(fetch_progress=self._progress)
         except apt.cache.FetchFailedException, e:
@@ -203,7 +201,8 @@ class AptLib(object):
         except SystemError, e:
             raise AptLibError('apt encountered an error: %s' % e)
         finally:
-            self.chroot.umountvirtfs()
+            if mounted > 0:
+                self.chroot.umountvirtfs()
 
         self.open()
 
@@ -262,7 +261,9 @@ class AptLibProgress(apt.progress.base.AcquireProgress):
         if item.owner.status == item.owner.STAT_DONE:
             line = 'APT IGN ' + item.description
         else:
-            line = 'APT ERR %s [%s]' % (item.description, item.owner.error_text)
+            line = 'APT ERR ' + item.description
+            if item.owner.error_text:
+                line += ' [%s]' % item.owner.error_text
         if self._quiet is False:
             print line
 

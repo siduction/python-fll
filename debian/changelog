@@ -1,50 +1,142 @@
-python-fll (2015.09.28) unstable; urgency=medium
+python-fll (0.9.25) unstable; urgency=medium
 
-  * fix control
+  [ Stefan Lippers-Hollmann ]
+  * s/kde-plasma-desktop/plasma-desktop/.
+  * s/kde-plasma-netbook/plasma-netbook/.
+  * bump standards version to 3.9.8, no changes necessary.
 
- -- Alf Gaida <agaida@siduction.org>  Mon, 28 Sep 2015 23:18:26 +0200
+ -- Alf Gaida <agaida@siduction.org>  Sat, 25 Jun 2016 01:29:06 +0200
 
-python-fll (2013.08.05) unstable; urgency=low
+python-fll (0.9.24) unstable; urgency=medium
 
-  * new numbering yyyy.mm.dd.minor
-  * added aspell-de
-  * remove XBSC-Original-Maintainer
-  * remove source source.lintian-override 
-  * copyright current standards
+  * fix F.U.L.L.S.T.O.R.Y. homepage URL.
 
- -- Alf Gaida <agaida@siduction.org>  Mon, 05 Aug 2013 23:39:32 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 12 Mar 2016 02:49:03 +0100
+
+python-fll (0.9.23) unstable; urgency=medium
+
+  * s/iceweasel/firefox/.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 11 Mar 2016 21:06:38 +0100
+
+python-fll (0.9.22) unstable; urgency=medium
+
+  * handle i18n for qpdfview.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 26 Nov 2015 06:40:08 +0100
+
+python-fll (0.9.21) unstable; urgency=medium
+
+  * s/myspell/hunspell/.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 19 Nov 2015 06:27:09 +0100
+
+python-fll (0.9.20) unstable; urgency=medium
+
+  * add dh-python package to Build-Depends.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 11 May 2015 23:28:05 +0200
+
+python-fll (0.9.19) unstable; urgency=medium
+
+  * switch to httpredir.debian.org as official GeoMirror.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 11 May 2015 23:26:23 +0200
+
+python-fll (0.9.18) unstable; urgency=medium
+
+  * convert to machine readable copyright.
+  * bump standards version to 3.9.6, no changes necessary.
+  * remove versioned (build-)dependencies satisfied in oldstable.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 04 Jan 2015 00:15:49 +0100
+
+python-fll (0.9.17) unstable; urgency=medium
+
+  * switch to http.debian.net as GeoMirror.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 25 Dec 2014 23:51:20 +0100
+
+python-fll (0.9.16) unstable; urgency=medium
+
+  * revert the fix for #755965 as cdebootstrap 0.6.3 fixed it
+  * make grub timeout integer in data/fll.conf.spec default to 1 not '1'
+  * fix doc of compression (default is actually none now)
+  * add file option to config for squashfs and tar and adjust to match
+  * mountvirtfs on init and umount on deinint
+  * only mountvirtfs in command if not mounted and umount if it had to
+  * refactor mounting so chroot.nuke umounts all but exit just undoes virtfs
+  * add mkfs (extN) compression option
+  * add wrap option to make some kind of bootable iso image
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Tue, 05 Aug 2014 22:26:14 +0100
+
+python-fll (0.9.15) unstable; urgency=medium
+
+  * bin/fll make pkgmod actually expand the profile.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Wed, 30 Jul 2014 17:52:32 +0100
+
+python-fll (0.9.14) unstable; urgency=medium
+
+  * umount the virtfs after cdebootstrap to account for #755965.
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Wed, 30 Jul 2014 02:00:37 +0100
+
+python-fll (0.9.13) unstable; urgency=medium
+
+  [ Niall Walsh ]
+  * bin/fll enhancements
+    - allow setting of hostname
+    - add password in distro to set password and addusers or autologin
+    - force cdebootstrap to systemd-sysv and include core packages
+    - add fscomp code to actually mksquashfs
+    - add tar option to fscomp
+    - create initramfs on chroot deinit
+    - write empty /etc/machine-id on chroot deinit
+  * bin/fll: fixup /etc/apt/sources.list (and sources.list.d/*) writing
+
+  [ Stefan Lippers-Hollmann ]
+  * add bfree to uploaders, so dch can do its magic.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 30 Jul 2014 00:57:42 +0200
+
+python-fll (0.9.12) unstable; urgency=low
+
+  * bump standards version to 3.9.5, no changes necessary.
+  * debian/control: switch Vcs tags to github.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 14 Apr 2014 00:02:03 +0200
+
+python-fll (0.9.11) unstable; urgency=low
+
+  * rebuild against python-apt 0.9.0.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 21 Oct 2013 22:22:27 +0200
 
 python-fll (0.9.10) unstable; urgency=low
 
-  * add source override to prevent lintian complaining about
-    XSBXC-Original-Maintainer
-  * fixes #648 
+  * bump standards version to 3.9.4, no changes necessary.
 
- -- Alf Gaida <agaida@siduction.org>  Thu, 22 Mar 2012 21:52:45 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 12 Jan 2013 03:30:17 +0100
 
 python-fll (0.9.9) unstable; urgency=low
 
-  * bump standards to 3.9.3
-  * bump compat to 9
-  * .gitignore created 
+  * revert Dir::Bin::dpkg hack.
 
- -- Alf Gaida <agaida@siduction.org>  Wed, 21 Mar 2012 13:40:30 +0100
+ -- Kel Modderman <kel@otaku42.de>  Sun, 22 Apr 2012 13:08:37 +0200
 
 python-fll (0.9.8) unstable; urgency=low
 
-  * Forked
-  * introduction me as maintainer
-  * introducing Ferdinand Thommes <devil@siduction.org> and Torsten
-    Wohlfarth <towo@siduction.org> as uploaders
-  * change the manual section and repository description
+  * bump standards version to 3.9.3, no changes necessary.
 
- -- Alf Gaida <agaida@siduction.org>  Wed, 04 Jan 2012 11:59:23 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 23 Feb 2012 16:52:09 +0100
 
-python-fll (0.9.7) UNRELEASED; urgency=low
+python-fll (0.9.7) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * switch to compat level 9.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 22 Dec 2011 02:07:03 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 16 Jan 2012 03:26:32 +0100
 
 python-fll (0.9.6) unstable; urgency=low
 

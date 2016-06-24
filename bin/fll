@@ -3,7 +3,7 @@
 """
 This is fll, it links all the fll modules together.
 
-Authour:   Kel Modderman
+Author:    Kel Modderman
 Copyright: Copyright (C) 2011 Kel Modderman <kel@otaku42.de>
 License:   GPL-2
 """
@@ -17,6 +17,7 @@ from fll.chroot import Chroot, ChrootError
 from fll.config import Config, ConfigError
 from fll.distro import Distro, DistroError
 from fll.fscomp import FsComp, FsCompError
+from fll.pkgmod import PkgMod, PkgModError
 
 
 def error(msg):
@@ -26,7 +27,6 @@ def error(msg):
 def main():
     try:
         conf = Config()
-        conf.init_config()
     except (ConfigError, IOError), e:
         error(e)
 
@@ -41,13 +41,22 @@ def main():
 
                 apt = AptLib(chroot=chroot, config=conf.config['apt'])
 
-                apt.install(['man-db'], commit=False)
+                pm = PkgMod(aptlib=apt, architecture=arch,
+                            config=conf.config['profile'])
+                fscomp = FsComp(chroot=chroot,config=conf.config['fscomp'])
+                pm.pkgs.update(fscomp.depends)
+
+                apt.install(pm.pkgs, commit=False)
                 for change in apt.changes():
                     print change
                 apt.commit()
 
+                dist = Distro(chroot=chroot, config=conf.config['distro'])
+                dist.init()
+
                 apt.deinit()
                 chroot.deinit()
+                fscomp.compress()
         except (AptLibError, ChrootError), e:
             error(e)
 

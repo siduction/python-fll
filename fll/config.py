@@ -2,7 +2,7 @@
 This is the fll.config module, it provides a class for abstracting the
 fll configuration file and command line arguments.
 
-Authour:   Kel Modderman
+Author:    Kel Modderman
 Copyright: Copyright (C) 2010 Kel Modderman <kel@otaku42.de>
 License:   GPL-2
 """
@@ -39,9 +39,9 @@ Examples:
     archive components:
     $ fll --archs amd64 i386 --components main contrib non-free
 
-    Add siduction package repository to chroot's apt sources:
-    $ fll --apt-source label=siduction uri=http://packages.siduction.org/siduction/ \\
-          components=main keyring=siduction-archive-keyring
+    Add aptosid package repository to chroot's apt sources:
+    $ fll --apt-source label=aptosid uri=http://aptosid.com/debian/ \\
+          components=main,fix.main keyring=aptosid-archive-keyring
 """
     formatter = argparse.RawDescriptionHelpFormatter
     p = argparse.ArgumentParser(description=desc, prog='fll',
@@ -138,7 +138,7 @@ Default: sid""")
                    metavar='<URI>',
                    help="""\
 Distribution mirror.
-Default: http://cdn.debian.net/debian/""")
+Default: http://httpredir.debian.org/debian/""")
 
     d.add_argument('--components', '-c',
                    dest='apt_sources_debian_components',
@@ -211,6 +211,27 @@ Select verbose mode for apt actions, overriding the global verbosity mode.
 Select debug mode for apt actions, overriding the global verbosity mode.
 """)
 
+    pm = p.add_argument_group(title='package module related arguments')
+
+    pm.add_argument('--profile-name',
+                    dest='profile_name',
+                    metavar='<PROFILE>',
+                    help="""\
+Name of package module to base system profile upon.""")
+
+    pm.add_argument('--profile-dir',
+                    dest='profile_dir',
+                    metavar='<DIR>',
+                    help="""\
+Package module directory path name.""")
+
+    pm.add_argument('--profile-packages',
+                    dest='profile_packages',
+                    nargs='+',
+                    metavar='<PACKAGES>',
+                    help="""\
+List of package names to append to package profile.""")
+
     c = p.add_argument_group(title='chroot related arguments')
 
     c.add_argument('--chroot-flavour',
@@ -241,7 +262,7 @@ Default: cdebootstrap""")
                    metavar='<URI>',
                    help="""\
 Bootstrap mirror.
-Default: http://cdn.debian.net/debian/""")
+Default: http://httpredir.debian.org/debian/""")
 
     c.add_argument('--chroot-include',
                    dest='chroot_bootstrap_include',
@@ -281,15 +302,30 @@ Select verbose mode for chroot actions, overriding the global verbosity mode.
 Select debug mode for chroot actions, overriding the global verbosity mode.
 """)
 
+    c.add_argument('--hostname',
+                   dest='chroot_hostname',
+                   metavar='<HOSTNAME>',
+                   help="""\
+Hostname to assign to the chroot.
+Default: chroot""")
+
     f = p.add_argument_group(title='filesystem related arguments')
 
     f.add_argument('--compression',
                    dest='fscomp_compression',
                    metavar='<COMP>',
-                   choices=['squashfs'],
+                   choices=['mkfs', 'squashfs','tar','none'],
                    help="""\
 Select compression type. Choices: %(choices)s.
-Default: squashfs""")
+Default: none""")
+
+    f.add_argument('--wrap',
+                   dest='fscomp_wrap',
+                   nargs='+',
+                   metavar='<WRAP>',
+                   help="""\
+Select list of wrappers to apply in order. Choices: none or iso.
+Default: none""")
 
     f.add_argument('--squashfs-compressor',
                    dest='fscomp_squashfs_compressor',
@@ -298,6 +334,71 @@ Default: squashfs""")
                    help="""\
 Squashfs compression type. Choices: %(choices)s.
 Default: gzip""")
+
+    f.add_argument('--squashfs-file',
+                   dest='fscomp_squashfs_file',
+                   metavar='<FILE>',
+                   help="""\
+Squashfs filename.
+Default: ''""")
+
+    f.add_argument('--tar-compressor',
+                   dest='fscomp_tar_compressor',
+                   metavar='<COMPRESSOR>',
+                   choices=['gz', 'bz', 'pz', 'xz'],
+                   help="""\
+Tar compression type. Choices: %(choices)s.
+Default: gzip""")
+
+    f.add_argument('--tar-file',
+                   dest='fscomp_tar_file',
+                   metavar='<FILE>',
+                   help="""\
+Tar filename.
+Default: ''""")
+
+    f.add_argument('--mkfs-type',
+                   dest='fscomp_mkfs_type',
+                   metavar='<FSTYPE>',
+                   choices=['ext2', 'ext3', 'ext4'],
+                   help="""\
+Mkfs filesystem type. Choices: %(choices)s.
+Default: ext2""")
+
+    f.add_argument('--mkfs-size',
+                   dest='fscomp_mkfs_size',
+                   type=int,
+                   help="""\
+Mkfs size in MB to sparse allocate to filesystem image.
+Default: 16000""")
+
+    f.add_argument('--mkfs-shrink',
+                   action='store_true',
+                   help="""\
+Select if mkfs result should be resized and truncated.
+Default: True
+""")
+
+    f.add_argument('--mkfs-factor',
+                   dest='fscomp_mkfs_factor',
+                   type=int,
+                   help="""\
+Mkfs factor as percentage to scale up apparent size by for truncation.
+Default: 110""")
+
+    f.add_argument('--mkfs-file',
+                   dest='fscomp_mkfs_file',
+                   metavar='<FILE>',
+                   help="""\
+Mkfs filename.
+Default: ''""")
+
+    f.add_argument('--iso-file',
+                   dest='fscomp_iso_file',
+                   metavar='<FILE>',
+                   help="""\
+ISO filename.
+Default: ''""")
 
     f.add_argument('--fscomp-quiet',
                    action='store_true',
@@ -426,7 +527,6 @@ class Config(object):
         self.config = ConfigObj(self.config_file, configspec=self.config_spec,
                                 interpolation='template')
 
-    def init_config(self):
         self._process_cmdline()
         self._validate_config()
         self._debug_configobj()
@@ -533,14 +633,15 @@ class Config(object):
         other_modes.discard(mode)
 
         for section in self.config.keys():
-            if section in ['boot', 'distro', 'environment', 'network']:
-                continue
             if isinstance(self.config[section], dict):
-                for m in other_modes:
-                    if self.config[section][m] is True:
-                        break
-                else:
-                    self.config[section][mode] = True
+                try:
+                    for m in other_modes:
+                        if self.config[section][m] is True:
+                            break
+                    else:
+                        self.config[section][mode] = True
+                except KeyError:
+                    pass
 
     def _debug_configobj(self):
         """Dump configuration object to file."""

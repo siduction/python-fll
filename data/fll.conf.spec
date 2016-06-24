@@ -13,7 +13,7 @@ archs		= list(default=list())
 #
 # Can be set via --mirror=<MIRROR> command line argument.
 #
-mirror		= string(min=1, default='http://cdn.debian.net/debian/')
+mirror		= string(min=1, default='http://httpredir.debian.org/debian/')
 
 # Build directory. A large amount of freespace is required. The mountpoint
 # where this directory exists must be mounted with permissive options as you
@@ -59,7 +59,7 @@ proxy		= string(default='')
 proxy		= string(default='')
 
 ##############################################################################
-# General options for fll.apt.AptLib class.
+# General options for fll.aptlib.AptLib class.
 #
 [apt]
 
@@ -154,6 +154,21 @@ keyring		= string(default='')
 gpgkey		= string(default='')
 
 ##############################################################################
+# General options for fll.pkgmod.PkgMod class.
+#
+[profile]
+
+# Name of the package profile to parse
+name		= string(default='')
+
+# Path to package module directory
+dir		= string(default='')
+
+# Packages to be installed
+packages	= list(default=list())
+
+
+##############################################################################
 # General options for fll.chroot.Chroot class.
 #
 [chroot]
@@ -175,6 +190,11 @@ quiet		= boolean(default=False)
 verbose		= boolean(default=False)
 debug		= boolean(default=False)
 
+# Hostname for the chroot.  Defaults to chroot
+#
+# Can be set via --hostname
+hostname       = string(min=1, default="chroot")
+
 # Bootstrap utility and options.
 #
 # For every keyword=value pair below exists a command line argument:
@@ -185,8 +205,8 @@ utility		= option('cdebootstrap', 'debootstrap', default='cdebootstrap')
 suite		= string(min=1, default='sid')
 uri		= string(min=1, default='$mirror')
 flavour		= option('minimal', 'build', 'standard', default='minimal')
-include		= string(default='')
-exclude		= string(default='')
+include		= string(default='apt-utils,bzip2,gnupg,systemd-sysv,xz-utils')
+exclude		= string(default='init,sysvinit,sysvinit-core')
 
 ##############################################################################
 # Each entry in this section is an environment variable keyword=value pair.
@@ -222,7 +242,7 @@ __many__	= string(min=1)
 # Type of compression to use for chroot filesystem "image". Not much choice
 # atm :) Each choice should have a subsection below.
 #
-compression	= option('squashfs', default='squashfs')
+compression	= option('none', 'mkfs', 'squashfs', 'tar', default='none')
 
 # Verbosity level of class. Inherits the top level 'verbosity' mode.
 #
@@ -233,11 +253,44 @@ quiet		= boolean(default=False)
 verbose		= boolean(default=False)
 debug		= boolean(default=False)
 
+# List of wrappers to apply to last output.  Only iso (or none) for now.
+wrap		= list(default=list('none'))
+
 # Squashfs compression options.
 #
 [[squashfs]]
+# squashfs filename, can be set with --squashfs-file command line argument
+file            = string(min=0, default='')
 # gzip, lzo or xz compressor
 compressor	= option('gzip', 'lzo', 'xz', default='gzip')
+
+# Tar compression options.
+#
+[[tar]]
+# tar filename, can be set with --tar-file command line argument
+file            = string(min=0, default='')
+# gz, bz, xz or pixz compressor
+compressor	= option('gz', 'bz', 'xz', 'pz', default='gz')
+
+# mkfs options
+#
+[[mkfs]]
+# hand set the filename
+file            = string(min=0, default='')
+# just ext2, ext3, ext4 support (for now anyway)
+type           = option('ext2', 'ext3', 'ext4', default='ext2')
+# the size in MB to allocate (sparsely) for the initial filesystem
+size            = integer(default='16000')
+# whether or not to resize and truncate the filesystem
+shrink          = boolean(default=True)
+# what precentage of the apparent size to shrink to (rounded up to 1M)
+factor          = integer(default=110)
+
+# iso options
+#
+[[iso]]
+# just the option to set the filename for now
+file            = string(min=0, default='')
 
 ##############################################################################
 # Boot loader related options.
@@ -246,6 +299,6 @@ compressor	= option('gzip', 'lzo', 'xz', default='gzip')
 # grub or syslinux
 loader		= option('grub', 'syslinux', default='grub')
 # Default timeout period before booting default entry
-timeout		= integer(default='30')
+timeout		= integer(default=30)
 # Default kernel command line parameters
 cmdline		= string(default='quiet')

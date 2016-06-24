@@ -2,7 +2,7 @@
 This is the fll.chroot module, it provides a class for bootstrapping
 and executing commands within a chroot.
 
-Authour:   Kel Modderman
+Author:    Kel Modderman
 Copyright: Copyright (C) 2010 Kel Modderman <kel@otaku42.de>
 License:   GPL-2
 """
@@ -50,11 +50,13 @@ class Chroot(object):
         self.rootdir = os.path.realpath(rootdir)
         self.architecture = architecture
         self.config = config
+        self.mounted = list()
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
+        self.umountvirtfs()
         if not self.config['preserve']:
             self.nuke()
 
@@ -135,6 +137,7 @@ class Chroot(object):
 
     def init(self):
         """Configure the basics to get a functioning chroot."""
+        self.mountvirtfs()
         for fname in ('/etc/hosts', '/etc/resolv.conf'):
             if os.path.isfile(self.chroot_path(fname)):
                 os.unlink(self.chroot_path(fname))
@@ -156,7 +159,7 @@ class Chroot(object):
     def deinit(self):
         """Undo any changes in the chroot which should be undone. Make any
         final configurations."""
-        for fname in ('/etc/hosts', '/etc/resolv.conf'):
+        for fname in ('/etc/hosts', '/etc/resolv.conf', '/etc/machine-id'):
             # /etc/resolv.conf (and possibly others) may be a symlink to an 
             # absolute path - so do not clobber the host's configuration.
             if os.path.islink(self.chroot_path(fname)):
@@ -172,6 +175,30 @@ class Chroot(object):
         self.debconf_set_selections(debconf)
         if os.path.exists(self.chroot_path('/usr/bin/mandb')):
             self.cmd('/usr/bin/mandb --create --quiet')
+
+        self.makeInitramfs()
+        self.umountvirtfs()
+
+    def hookitems(self,hook,items):
+        """run hook with each item"""
+        # e.g. self.makeImages('/etc/kernel/postinst.d/zs-sunxi-image',self.detectLinuxVersions())
+        print "running command >>> %s <<< for each item >>> %s <<<" % (hook, ", ".join(items))
+        for i in items:
+            self.cmd(hook % i)
+
+    def detectLinuxVersions(self):
+         """Return version string of installed vmlinu[xz]-*"""
+         kvers = [f[f.find('-')+1:]
+                 for f in os.listdir(os.path.join(self.rootdir, 'boot'))
+                 if f.startswith('vmlinuz-') or f.startswith('vmlinux-')]
+         kvers.sort
+         return(kvers)
+ 
+    def makeInitramfs(self):
+        """Generate the initramfs if update-initramfs was diverted"""
+        hook = '/usr/sbin/update-initramfs'
+        if hook in self.diverts and os.path.isfile(self.chroot_path(hook)):
+            self.hookitems('%s -c -k %s' % (hook, '%s'), self.detectLinuxVersions())
 
     def chroot_path(self, path):
         return os.path.join(self.rootdir, path.lstrip('/'))
@@ -202,12 +229,12 @@ exit %d""" % retv
 # /etc/fstab: static file system information."""
 
             elif filename == '/etc/hostname':
-                print >>fh, 'chroot'
+                print >>fh, self.config['hostname']
 
             elif filename == '/etc/hosts':
                 print >>fh, """\
 127.0.0.1\tlocalhost
-127.0.0.1\tchroot
+127.0.0.1\t%s
 
 # Below lines are for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
@@ -215,7 +242,7 @@ fe00::0 ip6-localnet
 ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
-ff02::3 ip6-allhosts"""
+ff02::3 ip6-allhosts""" % self.config['hostname']
 
             elif filename == '/etc/network/interfaces':
                 print >>fh, """\
@@ -231,17 +258,29 @@ iface lo inet loopback"""
 
     def mountvirtfs(self):
         """Mount /sys, /proc, /dev/pts virtual filesystems in the chroot."""
+        if len(self.mounted) > 0:
+            return(0)
+
         virtfs = {'devpts': '/dev/pts', 'proc': '/proc', 'sysfs': '/sys'}
 
         for vfstype, mnt in virtfs.items():
             cmd = ['mount', '-t', vfstype, 'none', self.chroot_path(mnt)]
             try:
                 subprocess.check_call(cmd, preexec_fn=fll.misc.restore_sigpipe)
+                self.mounted.append(self.chroot_path(mnt))
             except (subprocess.CalledProcessError, OSError):
                 raise ChrootError('failed to mount virtfs: ' + mnt)
+        return(len(self.mounted))
 
     def umountvirtfs(self):
         """Unmount virtual filesystems that are mounted within the chroot."""
+        umount = self.mounted
+        umount.reverse()
+        self._umount(umount)
+        self.mounted = list()
+
+    def umountall(self):
+        """Unmount all filesystems that are mounted within the chroot."""
         umount = list()
 
         with open('/proc/mounts') as mounts:
@@ -252,6 +291,10 @@ iface lo inet loopback"""
 
         umount.sort(key=len)
         umount.reverse()
+        self._umount(umount)
+
+    def _umount(self,umount):
+        """just umount whatever list of filesystems we are given."""
 
         for mnt in umount:
             try:
@@ -263,7 +306,7 @@ iface lo inet loopback"""
     def nuke(self):
         """Remove the chroot from filesystem. All mount points in chroot
         will be umounted prior to attempted removal."""
-        self.umountvirtfs()
+        self.umountall()
 
         try:
             if os.path.isdir(self.rootdir):
@@ -292,7 +335,7 @@ iface lo inet loopback"""
         if quiet is False:
             quiet = self.config['quiet']
 
-        self.mountvirtfs()
+        mounted = self.mountvirtfs()
         try:
             if pipe:
                 proc = subprocess.Popen(cmd, preexec_fn=self._chroot, cwd='/',
@@ -309,7 +352,8 @@ iface lo inet loopback"""
         except OSError, e:
             raise ChrootError('chrooted command failed: %s' % e)
         finally:
-            self.umountvirtfs()
+            if mounted > 0:
+                self.umountvirtfs()
             if devnull:
                 os.close(devnull)
 

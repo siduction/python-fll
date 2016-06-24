@@ -1,15 +1,18 @@
 Source: python-fll
-Maintainer: Alf Gaida <agaida@siduction.org>
-Uploaders: Ferdinand Thommes <devil@siduction.org>,
-           Torsten Wohlfarth <towo@siduction.org>
+Maintainer: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+Uploaders: Niall Walsh <niallwalsh@celtux.org>,
+           Alf Gaida <agaida@siduction.org>
 Section: python
 Priority: optional
-Build-Depends: debhelper (>= 9),
+Build-Depends: debhelper (>= 9.20120115),
+               dh-python,
                python-all,
                python-apt,
                python-argparse,
                python-configobj
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
+Vcs-git: git://github.com/fullstory/python-fll.git
+Vcs-Browser: https://github.com/fullstory/python-fll
 X-Python-Version: >=2.7
 
 Package: python-fll
